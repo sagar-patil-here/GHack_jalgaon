@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createMockAnalysis } from "@/lib/mock/prescriptions";
+import { createMockAnalysis } from "@/lib/mock-data";
 
 export async function POST(req: Request) {
   const formData = await req.formData();

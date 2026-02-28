@@ -3,33 +3,23 @@
 import * as React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { FileText, Image as ImageIcon, Loader2, UploadCloud } from "lucide-react";
 import { analyzePrescription } from "@/lib/api/client";
 import type { PrescriptionResult } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const formSchema = z.object({
-  file: z
-    .instanceof(File)
-    .refine((f) => f.size > 0, "Please select a file.")
-    .refine(
-      (f) =>
-        ["image/png", "image/jpeg", "image/webp", "application/pdf"].includes(
-          f.type
-        ),
-      "Upload an image or PDF."
-    )
-    .refine((f) => f.size <= 12 * 1024 * 1024, "Max file size is 12MB."),
-});
+const ACCEPTED_TYPES = ["image/png", "image/jpeg", "image/webp", "application/pdf"];
+const MAX_SIZE = 12 * 1024 * 1024;
 
-type FormValues = z.infer<typeof formSchema>;
+function validateFile(file: File | null): string | null {
+  if (!file || file.size === 0) return "Please select a file.";
+  if (!ACCEPTED_TYPES.includes(file.type)) return "Upload an image or PDF.";
+  if (file.size > MAX_SIZE) return "Max file size is 12 MB.";
+  return null;
+}
 
 export interface UploadCardProps {
   className?: string;
@@ -39,33 +29,27 @@ export interface UploadCardProps {
 export function UploadCard({ className, onAnalyzed }: UploadCardProps) {
   const router = useRouter();
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const [file, setFile] = React.useState<File | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
-  const [previewKind, setPreviewKind] = React.useState<"image" | "pdf" | null>(
-    null
-  );
+  const [previewKind, setPreviewKind] = React.useState<"image" | "pdf" | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors, isSubmitting },
-  } = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-  });
-
-  const onFile = React.useCallback(
-    (file: File) => {
-      setValue("file", file, { shouldValidate: true });
+  const pickFile = React.useCallback(
+    (f: File) => {
+      setFile(f);
+      setError(null);
       if (previewUrl) URL.revokeObjectURL(previewUrl);
-      if (file.type === "application/pdf") {
+      if (f.type === "application/pdf") {
         setPreviewKind("pdf");
         setPreviewUrl(null);
-        return;
+      } else {
+        setPreviewKind("image");
+        setPreviewUrl(URL.createObjectURL(f));
       }
-      setPreviewKind("image");
-      setPreviewUrl(URL.createObjectURL(file));
     },
-    [previewUrl, setValue]
+    [previewUrl]
   );
 
   React.useEffect(() => {
@@ -76,16 +60,38 @@ export function UploadCard({ className, onAnalyzed }: UploadCardProps) {
 
   const onDrop: React.DragEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file) onFile(file);
+    const f = e.dataTransfer.files?.[0];
+    if (f) pickFile(f);
   };
 
-  const onSubmit = async (values: FormValues) => {
-    const result = await analyzePrescription(values.file);
-    onAnalyzed?.(result);
-    if (!onAnalyzed) {
-      router.push(`/result/${result.id}`);
+  const callApi = async (fileToSend: File) => {
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const result = await analyzePrescription(fileToSend);
+      onAnalyzed?.(result);
+      if (!onAnalyzed) router.push(`/result/${result.id}`);
+    } catch {
+      setError("Analysis failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const handleAnalyze = () => {
+    const validationError = validateFile(file);
+    if (validationError || !file) {
+      setError(validationError ?? "Please select a file.");
+      return;
+    }
+    callApi(file);
+  };
+
+  const handleSampleData = () => {
+    const dummyFile = new File(["sample"], "sample-prescription.jpg", {
+      type: "image/jpeg",
+    });
+    callApi(dummyFile);
   };
 
   return (
@@ -93,7 +99,7 @@ export function UploadCard({ className, onAnalyzed }: UploadCardProps) {
       <CardHeader>
         <CardTitle>Upload prescription</CardTitle>
         <CardDescription>
-          Drag & drop an image/PDF or browse files. We’ll return a clean,
+          Drag & drop an image/PDF or browse files. We&apos;ll return a clean,
           structured interpretation.
         </CardDescription>
       </CardHeader>
@@ -117,26 +123,16 @@ export function UploadCard({ className, onAnalyzed }: UploadCardProps) {
             </div>
 
             <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-              {(() => {
-                const { ref, ...fileField } = register("file", {
-                  setValueAs: (v) => (v instanceof FileList ? v.item(0) : v),
-                  onChange: (e) => {
-                    const file = (e.target as HTMLInputElement).files?.[0];
-                    if (file) onFile(file);
-                  },
-                });
-                return (
-                  <Input
-                    type="file"
-                    accept="image/*,application/pdf"
-                    {...fileField}
-                    ref={(node) => {
-                      ref(node);
-                      fileInputRef.current = node;
-                    }}
-                  />
-                );
-              })()}
+              <input
+                type="file"
+                accept="image/*,application/pdf"
+                ref={fileInputRef}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) pickFile(f);
+                }}
+                className="hidden"
+              />
               <Button
                 type="button"
                 variant="secondary"
@@ -144,20 +140,25 @@ export function UploadCard({ className, onAnalyzed }: UploadCardProps) {
               >
                 Browse
               </Button>
+              {file && (
+                <span className="text-sm text-muted-foreground truncate max-w-[200px]">
+                  {file.name}
+                </span>
+              )}
             </div>
 
-            {errors.file?.message ? (
-              <div className="mt-3 text-sm text-muted-foreground">
-                {errors.file.message}
+            {error && (
+              <div className="mt-3 text-sm text-destructive font-medium">
+                {error}
               </div>
-            ) : null}
+            )}
           </div>
 
           <div className="rounded-xl border border-border bg-background/50 p-6">
             <div className="flex items-center justify-between">
               <div className="text-sm font-medium">Preview</div>
               <div className="text-xs text-muted-foreground">
-                {previewKind ? previewKind.toUpperCase() : "—"}
+                {previewKind ? previewKind.toUpperCase() : "\u2014"}
               </div>
             </div>
 
@@ -204,25 +205,38 @@ export function UploadCard({ className, onAnalyzed }: UploadCardProps) {
               )}
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="mt-5">
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <div className="mt-5 space-y-3">
+              <Button
+                type="button"
+                className="w-full"
+                disabled={isSubmitting || !file}
+                onClick={handleAnalyze}
+              >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Analyzing…
+                    Analyzing&hellip;
                   </>
                 ) : (
                   "Analyze Prescription"
                 )}
               </Button>
-              <div className="mt-3 text-xs text-muted-foreground">
-                Demo mode: returns mock structured output via `/api/analyze`.
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                disabled={isSubmitting}
+                onClick={handleSampleData}
+              >
+                Try with sample data
+              </Button>
+              <div className="text-xs text-muted-foreground text-center">
+                Demo mode &mdash; backend integration in progress.
               </div>
-            </form>
+            </div>
           </div>
         </div>
       </CardContent>
     </Card>
   );
 }
-

@@ -14,6 +14,13 @@ export type PrescriptionLanguage =
 
 export type PriceVendor = "amazon" | "tata1mg" | "pharmeasy";
 
+export interface GenericAlternative {
+  name: string;
+  price: string;
+  savings: string;
+  link: string;
+}
+
 export interface Medicine {
   id: string;
   name: string;
@@ -21,7 +28,7 @@ export interface Medicine {
   frequency: string;
   duration: string;
   instructions?: string;
-  genericAlternatives?: string[];
+  genericAlternatives?: GenericAlternative[];
 }
 
 export interface PriceLink {
@@ -51,5 +58,11 @@ export interface PrescriptionResult {
   medicines: Medicine[];
   priceLinks: PriceLink[];
   reminders: Reminder[];
+  
+  // New features
+  audioUrl?: string;
+  pdfUrl?: string;
+  telegramStatus?: "connected" | "disconnected";
+  calendarStatus?: "synced" | "unsynced";
+  modelUsed?: "gemini-2-flash" | "local-llama";
 }
-

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPrescription } from "@/lib/mock/prescriptions";
+import { getPrescription } from "@/lib/mock-data";
 
 export async function GET(
   _req: Request,

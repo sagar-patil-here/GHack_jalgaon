@@ -11,26 +11,28 @@ export interface HeroSectionProps {
 
 export function HeroSection({ className }: HeroSectionProps) {
   return (
-    <section className={cn("py-16 sm:py-24", className)}>
+    <section className={cn("py-16 sm:py-24 relative overflow-hidden", className)}>
+      {/* Background Gradient */}
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background opacity-50" />
+
       <div className="container-padded">
         <div className="mx-auto max-w-3xl text-center">
           <FadeIn>
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/30 px-3 py-1 text-xs text-muted-foreground">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/30 px-3 py-1 text-xs text-muted-foreground backdrop-blur-sm">
               <ShieldCheck className="h-3.5 w-3.5" />
               Health-grade clarity, designed minimal.
             </div>
           </FadeIn>
 
           <FadeIn delay={0.05}>
-            <h1 className="mt-6 text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
-              From Illegible to Intelligent.
+            <h1 className="mt-6 text-balance text-4xl font-semibold tracking-tight sm:text-5xl bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
+              Your Personal AI Pharmacist.
             </h1>
           </FadeIn>
 
           <FadeIn delay={0.1}>
             <p className="mt-5 text-pretty text-lg leading-8 text-muted-foreground">
-              Upload your prescription. Get clarity. Compare prices. Stay on
-              track.
+              Upload your prescription. Get clarity, find generics, compare prices, and stay on track with smart reminders.
             </p>
           </FadeIn>
 
@@ -38,7 +40,7 @@ export function HeroSection({ className }: HeroSectionProps) {
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button asChild size="lg">
                 <Link href="/upload" className="inline-flex items-center gap-2">
-                  Upload Prescription
+                  Analyze Prescription
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -50,24 +52,24 @@ export function HeroSection({ className }: HeroSectionProps) {
         </div>
 
         <FadeIn delay={0.2}>
-          <Card className="glass-card mt-12 overflow-hidden">
+          <Card className="glass-card mt-12 overflow-hidden border-primary/10 shadow-lg shadow-primary/5">
             <div className="grid gap-0 border-border/70 bg-gradient-to-b from-transparent to-muted/30 md:grid-cols-3 md:divide-x md:divide-border/70">
-              <div className="p-6">
+              <div className="p-6 hover:bg-muted/40 transition-colors">
                 <div className="text-sm font-medium">AI Interpretation</div>
                 <div className="mt-2 text-sm text-muted-foreground">
-                  Structured medicines, dosage, frequency, and instructions.
+                  Powered by Gemini 2.0 Flash for accurate handwriting recognition.
                 </div>
               </div>
-              <div className="p-6">
-                <div className="text-sm font-medium">Price Comparison</div>
+              <div className="p-6 hover:bg-muted/40 transition-colors">
+                <div className="text-sm font-medium">Smart Savings</div>
                 <div className="mt-2 text-sm text-muted-foreground">
-                  Quick vendor links with future real-time pricing.
+                  Find generic alternatives and compare prices across top vendors.
                 </div>
               </div>
-              <div className="p-6">
-                <div className="text-sm font-medium">Reminders & Export</div>
+              <div className="p-6 hover:bg-muted/40 transition-colors">
+                <div className="text-sm font-medium">Connected Health</div>
                 <div className="mt-2 text-sm text-muted-foreground">
-                  Calendar-ready reminders and clean PDF export.
+                  Sync with Google Calendar, Telegram, and listen in your language.
                 </div>
               </div>
             </div>
@@ -77,4 +79,3 @@ export function HeroSection({ className }: HeroSectionProps) {
     </section>
   );
 }
-

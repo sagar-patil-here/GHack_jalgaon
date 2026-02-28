@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FileText, Image as ImageIcon, Loader2, UploadCloud } from "lucide-react";
-import { analyzePrescription } from "@/lib/api/client";
+import { uploadPrescription } from "@/lib/api/client";
 import type { PrescriptionResult } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -68,10 +68,10 @@ export function UploadCard({ className, onAnalyzed }: UploadCardProps) {
     setIsSubmitting(true);
     setError(null);
     try {
-      const result = await analyzePrescription(fileToSend);
+      const result = await uploadPrescription(fileToSend);
       onAnalyzed?.(result);
       if (!onAnalyzed) router.push(`/result/${result.id}`);
-    } catch {
+    } catch (err) {
       setError("Analysis failed. Please try again.");
     } finally {
       setIsSubmitting(false);

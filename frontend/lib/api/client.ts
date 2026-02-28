@@ -1,21 +1,19 @@
 "use client";
 
 import type { PrescriptionResult } from "@/lib/types";
+import { transformBackendPrescription } from "@/lib/transform";
 
-/**
- * Upload a prescription image and get back the analysis result.
- * Always uses the Next.js API route (/api/analyze) which proxies to the backend
- * when configured, or returns mock data. This avoids CORS and keeps logic server-side.
- */
-export async function analyzePrescription(
+
+export async function uploadPrescription(
   file: File,
   language: string = "en"
 ): Promise<PrescriptionResult> {
   const formData = new FormData();
-  formData.set("file", file);
+  formData.set("prescription", file);
   formData.set("language", language);
+  formData.set("privacyConsent", "true");
 
-  const res = await fetch("/api/analyze", {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/prescriptions/upload`, {
     method: "POST",
     body: formData,
   });
@@ -25,15 +23,16 @@ export async function analyzePrescription(
     throw new Error(err.error || err.message || "Analysis failed");
   }
 
-  return (await res.json()) as PrescriptionResult;
+  const json = await res.json();
+  if (!json.success || !json.data?.prescription) {
+    throw new Error(json.message || "Invalid response format");
+  }
+
+  return transformBackendPrescription(json.data.prescription);
 }
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
-/**
- * Fetch all prescriptions for the current user (from backend).
- * Falls back to empty list if backend is not configured.
- */
 export async function fetchPrescriptions(
   page: number = 1,
   limit: number = 10
@@ -52,9 +51,6 @@ export async function fetchPrescriptions(
   return { prescriptions, total: json.meta?.total ?? prescriptions.length };
 }
 
-/**
- * Translate a prescription to another language (backend only).
- */
 export async function translatePrescription(
   prescriptionId: string,
   language: string
@@ -72,5 +68,5 @@ export async function translatePrescription(
   const json = await res.json();
   if (!json.success || !json.data?.prescription) throw new Error(json.message);
 
-  return json.data.prescription as PrescriptionResult;
+  return transformBackendPrescription(json.data.prescription);
 }

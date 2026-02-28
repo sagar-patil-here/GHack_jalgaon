@@ -58,8 +58,8 @@ export function AnalysisDashboard({ result }: AnalysisDashboardProps) {
     setAddedEvents(new Set(result.calendarEvents.map((e) => e.id)));
   };
 
-  const medicineEvents = result.calendarEvents.filter((e) => e.type === "medicine");
-  const reExamEvents = result.calendarEvents.filter((e) => e.type === "reexamination");
+  const medicineEvents = (result.calendarEvents || []).filter((e) => e.type === "medicine");
+  const reExamEvents = (result.calendarEvents || []).filter((e) => e.type === "reexamination");
   const confidencePercent = result.overallConfidence
     ? Math.round(result.overallConfidence * 100)
     : null;
@@ -263,17 +263,20 @@ export function AnalysisDashboard({ result }: AnalysisDashboardProps) {
       <div className="space-y-4">
         <h3 className="text-xl font-semibold tracking-tight">Prescribed Medicines</h3>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {result.medicines.map((med) => (
+          {(result.medicines || []).map((med) => (
             <Card key={med.id} className="shadow-cal-sm border-border bg-card flex flex-col">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <CardTitle className="text-lg">{med.name}</CardTitle>
-                    <CardDescription>{med.dosage} &bull; {med.frequency} &bull; {med.duration}</CardDescription>
+                    <CardDescription>
+                      {med.dosage} &bull; {med.frequency} &bull; {med.duration}
+                      {med.route && <> &bull; {med.route}</>}
+                    </CardDescription>
                   </div>
                   {med.confidence !== undefined && (
                     <Badge variant="outline" className={cn("text-xs shrink-0", med.confidence >= 0.8 ? "text-green-600" : med.confidence >= 0.6 ? "text-yellow-600" : "text-red-600")}>
-                      {Math.round(med.confidence * 100)}%
+                      {Math.round((med.confidence || 0) * 100)}%
                     </Badge>
                   )}
                 </div>

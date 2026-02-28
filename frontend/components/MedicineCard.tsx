@@ -25,6 +25,7 @@ export function MedicineCard({ medicine, className }: MedicineCardProps) {
               <Badge>{medicine.dosage}</Badge>
               <Badge variant="subtle">{medicine.frequency}</Badge>
               <Badge variant="subtle">{medicine.duration}</Badge>
+              {medicine.route && <Badge variant="outline">{medicine.route}</Badge>}
             </div>
           </div>
         </div>

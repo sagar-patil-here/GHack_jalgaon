@@ -6,9 +6,9 @@ export default function UploadPage() {
     <div className="container-padded pt-10">
       <FadeIn>
         <div className="max-w-5xl">
-          <h2 className="text-2xl font-semibold tracking-tight">Upload</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Prescription Upload Workspace</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Analyze a prescription into structured medicines and patient-friendly guidance.
+            Upload a prescription image/PDF, fetch structured data from backend, then edit and download.
           </p>
         </div>
       </FadeIn>

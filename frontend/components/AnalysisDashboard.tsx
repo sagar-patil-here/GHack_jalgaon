@@ -16,8 +16,9 @@ import {
   Stethoscope,
   Pill,
   AlertTriangle,
-  Shield,
   User,
+  Edit3,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -26,6 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import type { PrescriptionResult, CalendarEvent } from "@/lib/types";
 import { addToGoogleCalendar, addAllToGoogleCalendar } from "@/lib/calendar";
 import { cn } from "@/lib/utils";
+import { PrescriptionEditor } from "./PrescriptionEditor";
 
 interface AnalysisDashboardProps {
   result: PrescriptionResult;
@@ -36,6 +38,13 @@ export function AnalysisDashboard({ result }: AnalysisDashboardProps) {
   const [isSaved, setIsSaved] = React.useState(false);
   const [addedEvents, setAddedEvents] = React.useState<Set<string>>(new Set());
   const [allAdded, setAllAdded] = React.useState(false);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editedResult, setEditedResult] = React.useState<PrescriptionResult>(result);
+
+  const handleApplyEdits = (updated: PrescriptionResult) => {
+    setEditedResult(updated);
+    setIsEditing(false);
+  };
 
   const handlePlayAudio = () => {
     setIsPlaying(!isPlaying);
@@ -58,11 +67,21 @@ export function AnalysisDashboard({ result }: AnalysisDashboardProps) {
     setAddedEvents(new Set(result.calendarEvents.map((e) => e.id)));
   };
 
-  const medicineEvents = (result.calendarEvents || []).filter((e) => e.type === "medicine");
-  const reExamEvents = (result.calendarEvents || []).filter((e) => e.type === "reexamination");
-  const confidencePercent = result.overallConfidence
-    ? Math.round(result.overallConfidence * 100)
+  const medicineEvents = (editedResult.calendarEvents || []).filter((e) => e.type === "medicine");
+  const reExamEvents = (editedResult.calendarEvents || []).filter((e) => e.type === "reexamination");
+  const confidencePercent = editedResult.overallConfidence
+    ? Math.round(editedResult.overallConfidence * 100)
     : null;
+
+  if (isEditing) {
+    return (
+      <PrescriptionEditor
+        result={editedResult}
+        onBack={() => setIsEditing(false)}
+        onSave={handleApplyEdits}
+      />
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -72,10 +91,16 @@ export function AnalysisDashboard({ result }: AnalysisDashboardProps) {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Patient Summary</span>
-              <Button variant="outline" size="sm" className="gap-2" onClick={handlePlayAudio}>
-                <Volume2 className={cn("h-4 w-4", isPlaying && "animate-pulse text-primary")} />
-                {isPlaying ? "Playing..." : "Listen in My Language"}
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsEditing(true)}>
+                  <Edit3 className="h-4 w-4" />
+                  Edit Result
+                </Button>
+                <Button variant="outline" size="sm" className="gap-2" onClick={handlePlayAudio}>
+                  <Volume2 className={cn("h-4 w-4", isPlaying && "animate-pulse text-primary")} />
+                  {isPlaying ? "Playing..." : "Listen in My Language"}
+                </Button>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">

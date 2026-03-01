@@ -49,6 +49,7 @@ export function UploadScreen() {
   const [selectedLanguage, setSelectedLanguage] = React.useState<PrescriptionLanguage>("en");
   const [pipeline, setPipeline] = React.useState<"gemini" | "ml_pipeline">("gemini");
   const [rawView, setRawView] = React.useState(false);
+  const [isVerified, setIsVerified] = React.useState(false);
 
   const pickFile = React.useCallback(
     (next: File) => {
@@ -101,6 +102,7 @@ export function UploadScreen() {
 
       setResult(parsed);
       setRawView(false);
+      setIsVerified(false);
     } catch (err) {
       let message = err instanceof Error ? err.message : "Analysis failed. Please try again.";
 
@@ -120,6 +122,7 @@ export function UploadScreen() {
     setError(null);
     setFile(null);
     setRawView(false);
+    setIsVerified(false);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
     setPreviewKind(null);
@@ -313,7 +316,7 @@ export function UploadScreen() {
                     ) : (
                       <>
                         <Sparkles className="mr-2 h-4 w-4" />
-                        Analyze Prescription
+                        Scan Prescription
                       </>
                     )}
                   </Button>
@@ -358,6 +361,38 @@ export function UploadScreen() {
 
       {result && (
         <FadeIn delay={0.05}>
+          {/* Success Verification Alert */}
+          <div className="mb-6 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 animate-in fade-in slide-in-from-top-2 duration-500">
+            <div className="flex items-start gap-4">
+              <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600">
+                <CheckCircle2 className="h-5 w-5" />
+              </div>
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-emerald-700">Scan Successful!</p>
+                  <p className="text-xs text-emerald-600/90 leading-relaxed">
+                    Your prescription has been analyzed. Please double-check all extracted medication names, dosages, and instructions against the original physical document provided by your doctor before saving.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="verify-prescription"
+                    checked={isVerified}
+                    onChange={(e) => setIsVerified(e.target.checked)}
+                    className="h-4 w-4 cursor-pointer rounded border-emerald-500/40 text-emerald-600 focus:ring-emerald-500/30"
+                  />
+                  <label
+                    htmlFor="verify-prescription"
+                    className="text-xs font-medium text-emerald-700 cursor-pointer select-none hover:text-emerald-800"
+                  >
+                    I have verified the analyzed prescription with the doctor's original document.
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <Card className="border-border/80 shadow-cal-sm">
             <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -403,7 +438,11 @@ export function UploadScreen() {
                   {JSON.stringify(result, null, 2)}
                 </pre>
               ) : (
-                <PrescriptionEditor result={result} onSave={setResult} />
+                <PrescriptionEditor
+                  result={result}
+                  onSave={(updated) => setResult(updated)}
+                  isVerified={isVerified}
+                />
               )}
             </CardContent>
           </Card>
@@ -412,12 +451,8 @@ export function UploadScreen() {
 
       {/* Custom Unreadable Alert Modal */}
       {showUnreadableAlert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
-          <div
-            className="absolute inset-0 bg-background/80 backdrop-blur-sm transition-opacity"
-            onClick={() => setShowUnreadableAlert(false)}
-          />
-          <FadeIn className="relative w-full max-w-lg">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0 pointer-events-none">
+          <FadeIn className="relative w-full max-w-lg pointer-events-auto">
             <div className="overflow-hidden rounded-2xl border bg-background shadow-2xl ring-1 ring-black/5">
               <div className="flex flex-col items-center gap-4 bg-red-500/5 p-8 text-center sm:p-10">
                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-500/10 text-red-500 shadow-inner">

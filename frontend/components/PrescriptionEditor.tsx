@@ -18,9 +18,10 @@ interface PrescriptionEditorProps {
     result: PrescriptionResult;
     onBack?: () => void;
     onSave?: (updated: PrescriptionResult) => void;
+    isVerified?: boolean;
 }
 
-export function PrescriptionEditor({ result, onBack, onSave }: PrescriptionEditorProps) {
+export function PrescriptionEditor({ result, onBack, onSave, isVerified = true }: PrescriptionEditorProps) {
     const [data, setData] = React.useState<PrescriptionResult>(result);
 
     const handlePatientInfoChange = (field: keyof PrescriptionResult, value: string | string[]) => {
@@ -124,11 +125,24 @@ export function PrescriptionEditor({ result, onBack, onSave }: PrescriptionEdito
                             <ArrowLeft className="h-4 w-4" /> Back
                         </Button>
                     )}
-                    <Button variant="outline" size="sm" onClick={downloadPDF} className="gap-2 bg-background shadow-sm hover:shadow-md transition-all">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={downloadPDF}
+                        disabled={!isVerified}
+                        className="gap-2 bg-background shadow-sm hover:shadow-md transition-all"
+                        title={!isVerified ? "Please verify the prescription first" : ""}
+                    >
                         <Download className="h-4 w-4" />
                         Download PDF
                     </Button>
-                    <Button size="sm" onClick={() => onSave?.(data)} className="gap-2 shadow-sm hover:shadow-md transition-all">
+                    <Button
+                        size="sm"
+                        onClick={() => onSave?.(data)}
+                        disabled={!isVerified}
+                        className="gap-2 shadow-sm hover:shadow-md transition-all"
+                        title={!isVerified ? "Please verify the prescription first" : ""}
+                    >
                         <Save className="h-4 w-4" />
                         Save Changes
                     </Button>

@@ -2,16 +2,13 @@ import { Footer } from "@/components/Footer";
 import { HeroSection } from "@/components/HeroSection";
 import { FadeIn } from "@/components/motion/fade-in";
 import {
-  CalendarCheck,
   Sparkles,
   Volume2,
-  MessageCircle,
   FileText,
   Pill,
   Zap,
   Shield,
   Search,
-  ArrowRight,
   TrendingDown,
   Clock
 } from "lucide-react";
@@ -231,7 +228,7 @@ export default function Home() {
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
                   <Button asChild size="lg" className="h-14 px-10 rounded-full bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-all border-none">
-                    <Link href="/upload">Analyze Prescription</Link>
+                    <Link href="/upload">Scan Prescription</Link>
                   </Button>
                   <Button asChild size="lg" variant="outline" className="h-14 px-10 rounded-full bg-transparent text-background border-2 border-background/20 hover:bg-white/10 transition-all">
                     <Link href="/dashboard">View Dashboard</Link>

@@ -33,6 +33,8 @@ export class GroqService {
     async structurePrescriptionText(rawText: string): Promise<IPrescriptionExtraction> {
         try {
             console.info("[Groq Llama 3.3 70B] Structuring OCR-extracted text...");
+            console.info(`[Groq Llama 3.3 70B] Raw text received (${rawText.length} chars):`);
+            console.info(`[Groq Llama 3.3 70B] "${rawText}"`); // ✅ LOG THE ACTUAL TEXT
 
             const userPrompt = `You are a medical data extraction specialist.
 I have used an OCR tool (Tesseract) to extract raw text from a medical prescription image.
@@ -105,7 +107,9 @@ Return ONLY this exact JSON structure (no markdown, no extra text):
             );
 
             const responseText = response.data.choices[0].message.content;
-            console.log(`[Groq Llama 3.3 70B] Response received. Parsing JSON...`);
+            console.log(`[Groq Llama 3.3 70B] Raw response received:`);
+            console.log(`[Groq Llama 3.3 70B] ${responseText}`); // ✅ LOG THE ACTUAL GROQ RESPONSE
+            console.log(`[Groq Llama 3.3 70B] Parsing JSON...`);
 
             return this.parseExtractionResponse(responseText);
 
@@ -202,7 +206,14 @@ Provide exactly this JSON structure (do not include markdown):
     private parseExtractionResponse(text: string): IPrescriptionExtraction {
         try {
             const cleaned = this.cleanJsonResponse(text);
+            console.log(`[Groq Llama 3.3 70B] Cleaned JSON:`, cleaned); // ✅ LOG CLEANED JSON
+            
             const parsed = JSON.parse(cleaned);
+            console.log(`[Groq Llama 3.3 70B] Parsed successfully:`, {
+                medicines: parsed.medications?.length,
+                confidence: parsed.overallConfidence,
+                uncertainFields: parsed.uncertainFields,
+            }); // ✅ LOG PARSED DATA
 
             const medications = Array.isArray(parsed.medications)
                 ? parsed.medications.map((med: any) => ({

@@ -270,8 +270,8 @@ export function UploadScreen() {
                       onClick={() => setPipeline("gemini")}
                     >
                       <div className="flex flex-col items-start text-left">
-                        <span className="font-semibold text-sm">Fast Scan</span>
-                        <span className="text-[10px] opacity-80 font-normal">Limited, but fast</span>
+                        <span className="font-semibold text-sm">Scan With Gemini</span>
+                        <span className="text-[10px] opacity-80 font-normal">Limited Token</span>
                       </div>
                     </Button>
                     <Button
@@ -286,8 +286,8 @@ export function UploadScreen() {
                       onClick={() => setPipeline("groq")}
                     >
                       <div className="flex flex-col items-start text-left">
-                        <span className="font-semibold text-sm">Slow Scan</span>
-                        <span className="text-[10px] opacity-80 font-normal">Extra token</span>
+                        <span className="font-semibold text-sm">Scan With Groq</span>
+                        <span className="text-[10px] opacity-80 font-normal">Uses less token</span>
                       </div>
                     </Button>
                   </div>

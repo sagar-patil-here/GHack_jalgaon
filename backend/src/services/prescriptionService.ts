@@ -30,10 +30,10 @@ export class PrescriptionService {
       let extraction;
       if (pipeline === 'groq') {
         console.log(`[ML Pipeline] Extracting text via Tesseract OCR for ${originalName}`);
-        const rawText = await tesseractService.extractTextFromImage(filePath);
+        // const rawText = await tesseractService.extractTextFromImage(filePath);
         console.log(`[ML Pipeline] Structuring text via Groq for ${originalName}`);
         // extraction = await geminiService.structurePrescriptionText(rawText);
-        extraction=await groqService.structurePrescriptionText(rawText)
+        extraction=await groqService.extractPrescriptionFromImage(filePath);
       } else {
         console.log(`[Gemini Pipeline] Extracting directly via Gemini for ${originalName}`);
         extraction = await geminiService.extractPrescription(filePath);
